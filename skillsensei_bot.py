@@ -13,7 +13,6 @@ def extract_text_from_pdf(file):
 def generate_answer(question, resume_text):
     max_prompt_length = 4096 - len(f"Question: {question}\nResume: ")
     truncated_resume = resume_text[:max_prompt_length].rsplit("\n", 1)[0]
-    prompt = f"Question: {question}\nResume: {truncated_resume}\nAnswer:"
 
     messages = [
         {
