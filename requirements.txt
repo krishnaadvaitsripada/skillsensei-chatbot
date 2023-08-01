@@ -4,3 +4,4 @@ os
 PyPDF2
 dotenv
 langchain
+tiktoken
