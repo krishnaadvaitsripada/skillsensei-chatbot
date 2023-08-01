@@ -2,6 +2,9 @@ import streamlit as st
 import openai
 import os
 from PyPDF2 import PdfReader
+import io
+from dotenv import load_dotenv, find_dotenv
+_ = load_dotenv(find_dotenv()) # read local .env file
 
 def extract_text_from_pdf(file):
     pdf_document = PdfReader(file)
@@ -33,7 +36,7 @@ def generate_answer(question, resume_text):
     ]
 
     # Set the OpenAI API key
-    openai.api_key = 'API Key'
+    openai.api_key = os.environ['OPENAI_API_KEY']
 
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
@@ -44,7 +47,11 @@ def generate_answer(question, resume_text):
 
 def main():
     st.title('Welcome to SkillSensei! 🤖')
-	@@ -67,45 +52,16 @@ def main():
+    st.write("Interact with SkillSensei, the advanced chatbot capable of analyzing, comparing, and providing answers to any questions related to the uploaded resumes!")
+
+    file = st.file_uploader("Upload Resume", type=["pdf"])
+
+    with st.sidebar:
         st.title('SkillSensei')
         st.subheader("by Krishna Advait Sripada & Tarak Ram")
         st.caption("© 2023 by SkillSensei")
@@ -57,3 +64,6 @@ def main():
         if question:
             answer = generate_answer(question, resume_text)
             st.text_area("Answer:", value=answer, height=200)
+
+if __name__ == "__main__":
+    main()
