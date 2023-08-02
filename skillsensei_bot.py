@@ -1,7 +1,7 @@
 import streamlit as st
 import openai
 import os
-import pgml
+from pgml import Database
 from PyPDF2 import PdfReader
 from dotenv import load_dotenv, find_dotenv
 _ = load_dotenv(find_dotenv()) 
