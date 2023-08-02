@@ -1,6 +1,5 @@
 openai==0.27.6
 streamlit
-os==3.7
 PyPDF2
 dotenv
 langchain
