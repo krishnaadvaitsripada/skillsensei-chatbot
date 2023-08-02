@@ -1,6 +1,6 @@
 openai==0.27.6
 streamlit
 PyPDF2
-dotenv
+python-dotenv
 langchain
 tiktoken
