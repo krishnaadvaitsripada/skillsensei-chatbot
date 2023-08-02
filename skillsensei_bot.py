@@ -5,6 +5,9 @@ from PyPDF2 import PdfReader
 from dotenv import load_dotenv, find_dotenv
 _ = load_dotenv(find_dotenv()) 
 
+# Set the OpenAI API key
+openai.api_key = os.environ['OPENAI_API_KEY']
+
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import ConversationChain
 from langchain.llms import OpenAI
@@ -48,9 +51,6 @@ def generate_answer(question, resume_text):
             'content': question,
         },
     ]
-
-    # Set the OpenAI API key
-    openai.api_key = os.environ['OPENAI_API_KEY']
 
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
