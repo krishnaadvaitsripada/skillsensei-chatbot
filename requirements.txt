@@ -1,4 +1,4 @@
-openai
+openai==0.27.6
 streamlit
 os
 PyPDF2
