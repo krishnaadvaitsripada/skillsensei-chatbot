@@ -1,14 +1,11 @@
 import streamlit as st
 import openai
 import os
-import uuid
-import asyncio
 from pgml import Database
 from PyPDF2 import PdfReader
 from dotenv import load_dotenv, find_dotenv
-
-# Load environment variables
-_ = load_dotenv(find_dotenv())
+_ = load_dotenv(find_dotenv()) 
+import asyncio
 
 # Set the OpenAI API Key
 openai.api_key = os.environ['OPENAI_API_KEY']
@@ -26,7 +23,8 @@ collection_name = "candidate_resumes"
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import ConversationChain
 from langchain.llms import OpenAI
-from langchain.memory import ConversationSummaryBufferMemory
+from langchain.memory import ConversationBufferMemory, ConversationBufferWindowMemory
+from langchain.memory import ConversationTokenBufferMemory, ConversationSummaryBufferMemory
 
 llm = ChatOpenAI(temperature=0)
 memory = ConversationSummaryBufferMemory(llm=llm, max_token_limit=200)
@@ -123,9 +121,6 @@ def main():
     st.title('Welcome to SkillSensei! 🤖')
     st.write("Interact with SkillSensei, the advanced chatbot capable of analyzing, comparing, and providing answers to any questions related to the uploaded resumes!")
 
-    # Initialize SessionState to store conversation history for each user
-    session_state = st.session_state.get(conversation_history={})
-
     files = st.file_uploader("Upload Resumes (up to 20)", type=["pdf"], accept_multiple_files=True)
     resume_texts = []
 
@@ -138,26 +133,21 @@ def main():
         for file in files:
             resume_text = extract_text_from_pdf(file)
             
-            # Generate a unique ID for each file and use it as the key in the database
-            file_id = str(uuid.uuid4())  # Use UUID as the unique identifier
-            add_to_database(collection_name, {"file_id": file_id, "filename": file.name, "content": resume_text})
+            # add to database
+            add_to_database(collection_name, {"filename": file.name, "content": resume_text})
             
-            # Save the resume text along with its ID for future reference
-            resume_texts.append({"file_id": file_id, "resume_text": resume_text})
-
+            resume_texts.append(resume_text)
+        
         # Ask questions
-        questions = st.text_input("Enter your questions (comma-separated):", key="questions")
-        if questions:
-            questions = [q.strip() for q in questions.split(",")]
-
-            for i, question in enumerate(questions):
-                answer = generate_answer(question, [resume_text["resume_text"] for resume_text in resume_texts], 
-                                         do_vector_search(collection_name, question))
-                
-                # Store the conversation history for each question
-                session_state.conversation_history[question] = answer
-                
-                st.text_area(f"Answer {i+1}:", value=answer, height=200)
+        question = st.text_input("Enter your Question:", key="first_question")
+        i = 0
+        while True:
+            if question:
+                answer = generate_answer(question, resume_texts, do_vector_search(collection_name, question))
+                memory.save_context({"input": question}, {"output": answer})
+                st.text_area("Answer:", value=answer, height=200)
+                question = st.text_input("Enter your next question:", key="next_question"+str(i))
+                i += 1 # to avoid duplicate keys on the previous line
 
 if __name__ == "__main__":
     main()
