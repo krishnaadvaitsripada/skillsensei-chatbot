@@ -124,7 +124,12 @@ def main():
     st.write("Interact with SkillSensei, the advanced chatbot capable of analyzing, comparing, and providing answers to any questions related to the uploaded resumes!")
 
     # Initialize SessionState to store conversation history for each user
-    session_state = st.session_state.get(conversation_history={})
+    #session_state = st.session_state.get(conversation_history={})
+    
+    # Initialize conversation history using a dictionary
+    #if 'conversation_history' not in st.session_state:
+        #st.session_state.conversation_history = {}
+        #session_state = st.session_state.conversation_history
 
     files = st.file_uploader("Upload Resumes (up to 20)", type=["pdf"], accept_multiple_files=True)
     resume_texts = []
@@ -155,7 +160,7 @@ def main():
                                          do_vector_search(collection_name, question))
                 
                 # Store the conversation history for each question
-                session_state.conversation_history[question] = answer
+                #session_state.conversation_history[question] = answer
                 
                 st.text_area(f"Answer {i+1}:", value=answer, height=200)
 
