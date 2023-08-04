@@ -55,7 +55,6 @@ def extract_text_from_pdf(file):
         text += page.extract_text()
     return text
 
-
 def generate_answer(question, resume_texts, database_context):
     max_prompt_length = 4096 - len(f"Question: {question}\nResumes: ")
     truncated_resumes = " ".join(resume[:max_prompt_length] for resume in resume_texts)
@@ -94,7 +93,7 @@ def generate_answer(question, resume_texts, database_context):
 async def add_to_database_async(collection_to_add, content):
     collection = await db.create_or_get_collection(collection_to_add)
     
-    await collection.upsert_documents([content])
+    await collection.upsert_documents(content)
     await collection.generate_chunks()
     await collection.generate_embeddings()
 
@@ -134,23 +133,52 @@ def main():
 
     files = st.file_uploader("Upload Resumes (up to 20)", type=["pdf"], accept_multiple_files=True)
     resume_texts = []
+    add_to_database_button = st.button("Add to database")
+    
 
     with st.sidebar:
         st.title('SkillSensei')
         st.subheader("by Krishna Advait Sripada & Tarak Ram")
         st.caption("© 2023 by SkillSensei")
         
+        st.subheader("Send Interview Invitation")
+        email_input = st.text_input("Provide details about the candidate to whom the email needs to be directed, \
+            including interview date and time information, along with a concise outline of the job role.", key="email input")
+        sender_name = st.text_input("Sender name")
+        send_email_button = st.button("Send email")
+        
+        if send_email_button:
+            with st.spinner('Sending email...'):
+                agent.run(f"Send a professional email to a candidate via gmail inviting them for an online interview for a job, \
+                    along with a google calendar invite for the interview. Details of the candidate, the job, and the interview \
+                    are provided by the user. Here's the information provided by the user: {email_input}. Use this input \
+                    text to extract the necessary details needed for the email and google calendar invite. \
+                    \
+                    Make sure that email content contains various paragraphs of clear and elaborated text. The signature should \
+                    have the sender's name as {sender_name}. It follow the standard guidelines and format of that of a letter. \
+                    Greet the candidate first and then talk about the inviting them for an interview. Have the details \
+                    of the interview in a separate paragraph in the email. \
+                    \
+                    Use the date and time of the interview for creating and sending the Google Calendar event.")
+                
+                st.success('Email successfully sent!', icon="✅")
+            
     if files is not None:
         for file in files:
             resume_text = extract_text_from_pdf(file)
             
             # Generate a unique ID for each file and use it as the key in the database
-            file_id = str(uuid.uuid4())  # Use UUID as the unique identifier
-            add_to_database(collection_name, {"file_id": file_id, "filename": file.name, "content": resume_text})
+            file_id = str(uuid.uuid4())  # Use UUID as the unique identifie
             
             # Save the resume text along with its ID for future reference
-            resume_texts.append({"file_id": file_id, "resume_text": resume_text})
+            resume_texts.append({"file_id": file_id, "resume_text": resume_text, "filename": file.name})
 
+        if add_to_database_button:
+            with st.spinner('Adding files to database...'):
+                
+                add_to_database(collection_name, resume_texts)
+                st.success('Files Added!', icon="✅")
+                    
         # Ask questions
         questions = st.text_input("Enter your questions (comma-separated):", key="questions")
         if questions:
@@ -159,11 +187,11 @@ def main():
             for i, question in enumerate(questions):
                 answer = generate_answer(question, [resume_text["resume_text"] for resume_text in resume_texts], 
                                          do_vector_search(collection_name, question))
-                
                 # Store the conversation history for each question
                 #session_state.conversation_history[question] = answer
-                
+                memory.save_context({"input": question}, {"output": answer})
                 st.text_area(f"Answer {i+1}:", value=answer, height=200)
 
 if __name__ == "__main__":
     main()
+
