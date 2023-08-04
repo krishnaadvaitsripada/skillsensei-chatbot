@@ -55,6 +55,7 @@ def extract_text_from_pdf(file):
         text += page.extract_text()
     return text
 
+
 def generate_answer(question, resume_texts, database_context):
     max_prompt_length = 4096 - len(f"Question: {question}\nResumes: ")
     truncated_resumes = " ".join(resume[:max_prompt_length] for resume in resume_texts)
