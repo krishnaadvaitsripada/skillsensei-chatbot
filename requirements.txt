@@ -4,3 +4,5 @@ PyPDF2==3.0.1
 python-dotenv
 langchain==0.0.250
 tiktoken==0.4.0
+pgml==1.0.1
+asyncio==3.4.3
