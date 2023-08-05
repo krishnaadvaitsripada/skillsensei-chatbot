@@ -8,18 +8,17 @@ from PyPDF2 import PdfReader
 from dotenv import load_dotenv, find_dotenv
 
 # Load environment variables
-#_ = load_dotenv(find_dotenv())
-openai_api_key="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"
-zapier_api_key="sk-ak-0aFgF5YljTgkXk3rkUxOtmI5GE"
+_ = load_dotenv(find_dotenv())
+
 DATABASE_URL="postgres://u_mzkul3arivqxfbr:dkkspr1yjiyavnn@02f7e6f1-1adb-4347-835a-02c74fcccb0e.db.cloud.postgresml.org:6432/pgml_dsu3bl0afodnrvg"
 db = Database(DATABASE_URL)
-openai.api_key = openai_api_key
 
 # Set the OpenAI API Key
-#openai.api_key = os.environ['OPENAI_API_KEY']
+openai_api_key = os.environ['OPENAI_API_KEY']
+openai.api_key = openai_api_key
 
 # Set up Zapier API Key
-#zapier_api_key = os.environ['ZAPIER_API_KEY']
+zapier_api_key = os.environ['ZAPIER_API_KEY']
 
 # database
 #conninfo = os.environ["DATABASE_URL"]
@@ -193,4 +192,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
