@@ -60,7 +60,7 @@ def extract_text_from_pdf(file):
         text += page.extract_text()
     return text
 
-def generate_answer(question, resume_texts, database_context):
+def generate_answer(question, resume_texts):
     max_prompt_length = 4096 - len(f"Question: {question}\nResumes: ")
     truncated_resumes = " ".join(resume[:max_prompt_length] for resume in resume_texts)
     history_answer = conversation.predict(input=question)
@@ -75,12 +75,7 @@ def generate_answer(question, resume_texts, database_context):
                 in the documents. If the user uses any inappropriate language, please warn them. \
                 All your responses must be appropriately long and no more than the token limit of {max_prompt_length}. \
                 If any of the user's questions appear to reference a prior conversation, the appropriate \
-                response should be obtained using {history_answer}. \
-                \
-                \
-                You also have access to all the resumes stored in the database. Here's the information stored in the \
-                database: {database_context}. The question asked by the user can refer to the content of the resumes \
-                stored in the database as well, in which case use the information provided to you."
+                response should be obtained using {history_answer}."
         },
         {
             'role': 'user',
@@ -190,8 +185,7 @@ def main():
             questions = [q.strip() for q in questions.split(",")]
 
             for i, question in enumerate(questions):
-                answer = generate_answer(question, [resume_text["resume_text"] for resume_text in resume_texts], 
-                                         do_vector_search(collection_name, question))
+                answer = generate_answer(question, [resume_text["resume_text"] for resume_text in resume_texts])
                 # Store the conversation history for each question
                 #session_state.conversation_history[question] = answer
                 memory.save_context({"input": question}, {"output": answer})
