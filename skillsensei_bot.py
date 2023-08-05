@@ -10,15 +10,19 @@ from dotenv import load_dotenv, find_dotenv
 # Load environment variables
 _ = load_dotenv(find_dotenv())
 
+DATABASE_URL="postgres://u_mzkul3arivqxfbr:dkkspr1yjiyavnn@02f7e6f1-1adb-4347-835a-02c74fcccb0e.db.cloud.postgresml.org:6432/pgml_dsu3bl0afodnrvg"
+db = Database(DATABASE_URL)
+
 # Set the OpenAI API Key
-openai.api_key = os.environ['OPENAI_API_KEY']
+openai_api_key = os.environ['OPENAI_API_KEY']
+openai.api_key = openai_api_key
 
 # Set up Zapier API Key
 zapier_api_key = os.environ['ZAPIER_API_KEY']
 
 # database
-conninfo = os.environ["DATABASE_URL"]
-db = Database(conninfo)
+#conninfo = os.environ["DATABASE_URL"]
+#db = Database(conninfo)
 
 collection_name = "candidate_resumes"
 
@@ -28,7 +32,7 @@ from langchain.chains import ConversationChain
 from langchain.llms import OpenAI
 from langchain.memory import ConversationSummaryBufferMemory
 
-llm = ChatOpenAI(temperature=0)
+llm = ChatOpenAI(temperature=0, openai_api_key=openai_api_key)
 memory = ConversationSummaryBufferMemory(llm=llm, max_token_limit=200)
 conversation = ConversationChain(
     llm=llm, 
@@ -44,7 +48,7 @@ from langchain.utilities.zapier import ZapierNLAWrapper
 zapier = ZapierNLAWrapper(zapier_nla_api_key=zapier_api_key)
 toolkit = ZapierToolkit.from_zapier_nla_wrapper(zapier)
 agent = initialize_agent(
-    toolkit.get_tools(), OpenAI(temperature=0), 
+    toolkit.get_tools(), OpenAI(temperature=0, openai_api_key=openai_api_key), 
     agent="zero-shot-react-description", verbose=False
 )
 
@@ -194,4 +198,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
